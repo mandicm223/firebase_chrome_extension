@@ -9,22 +9,56 @@ domain = domain
 chrome.runtime.sendMessage(
   { command: 'fetch', data: { domain: domain } },
   (response) => {
-    parseCoupons(response.data)
+    parseCoupons(response.data, domain)
   }
 )
 
-const parseCoupons = function (coupons) {
+const parseCoupons = function (coupons, domain) {
   try {
     var couponHTML = ''
-    coupons.forEach(function (coupon, index) {
+    for (var key in coupons) {
+      var coupon = coupons[key]
+      // coupons.forEach(function (coupon, index) {
       couponHTML +=
-        '<li>Code:' + coupon.code + '<em>' + coupon.description + '</em></li>'
-    })
+        '<li><span class="code">' +
+        coupon.code +
+        '</span> ' +
+        '<p>' +
+        coupon.description +
+        '</p></li>'
+    }
 
     var couponDisplay = document.createElement('div')
-    couponDisplay.innerHTML = '<ul>' + couponHTML + '</ul>'
+    couponDisplay.className = 'coupon_list'
+    couponDisplay.innerHTML =
+      '<h1>Coupons </h1> <p>Browse coupons that have been used for: <strong>' +
+      domain +
+      '</strong></p> <ul>' +
+      couponHTML +
+      '</ul>' +
+      '<p style="font-style: italic;">Click any coupon to copy &amp; use </p>'
     document.body.appendChild(couponDisplay)
+
+    var couponButton = document.createElement('div')
+    couponButton.className = 'coupon_button'
+    couponButton.innerHTML =
+      '<i class="fa fa-money" style="font-size:48px;"></i>'
+    document.body.appendChild(couponButton)
+
+    createEvents()
   } catch (e) {
     console.log('no coupons found for this domain', e)
   }
+}
+
+var createEvents = function () {
+  document
+    .querySelector('.coupon_button')
+    .addEventListener('click', function (event) {
+      if (document.querySelector('.coupon_list').style.display == 'block') {
+        document.querySelector('.coupon_list').style.display = 'none'
+      } else {
+        document.querySelector('.coupon_list').style.display = 'block'
+      }
+    })
 }
