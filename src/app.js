@@ -13,7 +13,26 @@ chrome.runtime.sendMessage(
   }
 )
 
-const parseCoupons = function (coupons, domain) {
+var submitCoupon = function (code, description, domain) {
+  console.log('submit coupon', { code, description, domain })
+  chrome.runtime.sendMessage(
+    {
+      command: 'post',
+      data: { code: code, description: description, domain: domain },
+    },
+    (response) => {
+      submitCoupon_callback(response.data, domain)
+    }
+  )
+}
+
+var submitCoupon_callback = function (resp, domain) {
+  console.log('Resp:', resp)
+  document.querySelector('submit_overlay').style.display = 'none'
+  alert('Coupon submited')
+}
+
+var parseCoupons = function (coupons, domain) {
   try {
     var couponHTML = ''
     for (var key in coupons) {
@@ -74,6 +93,14 @@ var createEvents = function () {
       } else {
         document.querySelector('.submit_overlay').style.display = 'block'
       }
+    })
+
+  document
+    .querySelector('.submit_overlay .submit-coupon')
+    .addEventListener('click', function (event) {
+      var code = document.querySelector('.submit_overlay', '.code')
+      var desc = document.querySelector('.submit_overlay', '.desc')
+      submitCoupon(code, desc, window.domain)
     })
 
   document

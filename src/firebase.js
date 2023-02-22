@@ -54,5 +54,42 @@ chrome.runtime.onMessage.addListener((msg, sender, response) => {
         console.log('No data available')
       })
   }
+  if (msg.command == 'post') {
+    var domain = msg.data.domain
+    var enc_domain = btoa(domain)
+    var code = msg.data.code
+    var desc = msg.data.desc
+
+    try {
+      const db = getDatabase(firebase)
+      const postId = push(child(ref(db), '/domain/' + enc_domain)).key
+      update(ref(db, '/domain/' + enc_domain + '/' + postId), {
+        code: code,
+        description: desc,
+      })
+        .then(() => {
+          //return response
+          response({
+            type: 'result',
+            status: 'success',
+            data: postId,
+            request: msg,
+          })
+        })
+        .catch((error) => {
+          // The write failed...
+          console.log('error:', e)
+          response({
+            type: 'result',
+            status: 'error',
+            data: error,
+            request: msg,
+          })
+        })
+    } catch (e) {
+      console.log('error:', e)
+      response({ type: 'result', status: 'error', data: e, request: msg })
+    }
+  }
   return true
 })
